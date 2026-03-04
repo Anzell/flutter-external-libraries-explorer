@@ -6,6 +6,10 @@
   "publisher": "Anzell",
   "license": "MIT",
   "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anzell/flutter-external-libraries-explorer.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
