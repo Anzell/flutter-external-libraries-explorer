@@ -1,0 +1,69 @@
+{
+  "name": "flutter-external-libraries-explorer",
+  "displayName": "Flutter External Libraries Explorer",
+  "description": "Adds an External Libraries tree for Flutter/Dart projects using pubspec.lock versions.",
+  "version": "0.0.1",
+  "publisher": "Anzell",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:flutterExternalLibrariesView",
+    "onCommand:flutterExternalLibraries.refresh"
+  ],
+  "main": "./out/extension.js",
+  "files": [
+    "out/**",
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "media/icon.png",
+    "node_modules/yaml/dist/**",
+    "node_modules/yaml/package.json",
+    "node_modules/yaml/LICENSE"
+  ],
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "flutterExternalLibrariesView",
+          "name": "External Libraries (Flutter)"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "flutterExternalLibraries.refresh",
+        "title": "Flutter External Libraries: Refresh"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "flutterExternalLibraries.refresh",
+          "when": "view == flutterExternalLibrariesView",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.58",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.6.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "yaml": "^2.8.1"
+  }
+}
