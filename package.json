@@ -2,7 +2,7 @@
   "name": "flutter-external-libraries-explorer",
   "displayName": "Flutter External Libraries Explorer",
   "description": "Adds an External Libraries tree for Flutter/Dart projects using pubspec.lock versions.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "Anzell",
   "license": "MIT",
   "icon": "media/icon.png",
