@@ -2,7 +2,7 @@
   "name": "flutter-external-libraries-explorer",
   "displayName": "Flutter External Libraries Explorer",
   "description": "Adds an External Libraries tree for Flutter/Dart projects using pubspec.lock versions.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "Anzell",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -18,7 +18,10 @@
   ],
   "activationEvents": [
     "onView:flutterExternalLibrariesView",
-    "onCommand:flutterExternalLibraries.refresh"
+    "onCommand:flutterExternalLibraries.refresh",
+    "onCommand:flutterExternalLibraries.enableSearchInDependencies",
+    "onCommand:flutterExternalLibraries.disableSearchInDependencies",
+    "onCommand:flutterExternalLibraries.openSearchInDependencies"
   ],
   "main": "./out/extension.js",
   "files": [
@@ -32,6 +35,16 @@
     "node_modules/yaml/LICENSE"
   ],
   "contributes": {
+    "configuration": {
+      "title": "Flutter External Libraries Explorer",
+      "properties": {
+        "flutterExternalLibraries.searchInDependencies": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Quando ativado, `Ctrl+Shift+F` (`Cmd+Shift+F` no Mac) passa a buscar também no código-fonte das dependências Flutter/Dart do projeto. O escopo inclui o workspace atual mais todos os pacotes resolvidos."
+        }
+      }
+    },
     "views": {
       "explorer": [
         {
@@ -43,18 +56,57 @@
     "commands": [
       {
         "command": "flutterExternalLibraries.refresh",
-        "title": "Flutter External Libraries: Refresh"
+        "title": "Flutter External Libraries: Atualizar",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "flutterExternalLibraries.enableSearchInDependencies",
+        "title": "Flutter External Libraries: Incluir Dependências na Busca",
+        "icon": "$(zoom-in)"
+      },
+      {
+        "command": "flutterExternalLibraries.disableSearchInDependencies",
+        "title": "Flutter External Libraries: Buscar Somente no Workspace",
+        "icon": "$(zoom-out)"
+      },
+      {
+        "command": "flutterExternalLibraries.openSearchInDependencies",
+        "title": "Flutter External Libraries: Abrir Busca nas Dependências",
+        "icon": "$(search)"
       }
     ],
     "menus": {
       "view/title": [
         {
+          "command": "flutterExternalLibraries.enableSearchInDependencies",
+          "when": "view == flutterExternalLibrariesView && !flutterExternalLibraries.searchInDependenciesEnabled",
+          "group": "navigation@1"
+        },
+        {
+          "command": "flutterExternalLibraries.disableSearchInDependencies",
+          "when": "view == flutterExternalLibrariesView && flutterExternalLibraries.searchInDependenciesEnabled",
+          "group": "navigation@1"
+        },
+        {
+          "command": "flutterExternalLibraries.openSearchInDependencies",
+          "when": "view == flutterExternalLibrariesView && flutterExternalLibraries.searchInDependenciesEnabled",
+          "group": "navigation@2"
+        },
+        {
           "command": "flutterExternalLibraries.refresh",
           "when": "view == flutterExternalLibrariesView",
-          "group": "navigation"
+          "group": "navigation@3"
         }
       ]
-    }
+    },
+    "keybindings": [
+      {
+        "command": "flutterExternalLibraries.openSearchInDependencies",
+        "key": "ctrl+shift+f",
+        "mac": "cmd+shift+f",
+        "when": "flutterExternalLibraries.searchInDependenciesEnabled"
+      }
+    ]
   },
   "scripts": {
     "compile": "tsc -p ./",

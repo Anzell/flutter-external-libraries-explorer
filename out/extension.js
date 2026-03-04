@@ -48,7 +48,8 @@ const yaml_1 = __importDefault(require("yaml"));
 const execFileAsync = (0, node_util_1.promisify)(node_child_process_1.execFile);
 function activate(context) {
     const provider = new ExternalLibrariesTreeProvider();
-    context.subscriptions.push(vscode.window.registerTreeDataProvider('flutterExternalLibrariesView', provider), vscode.commands.registerCommand('flutterExternalLibraries.refresh', () => provider.refresh()));
+    const searchManager = new SearchInDependenciesManager(provider);
+    context.subscriptions.push(vscode.window.registerTreeDataProvider('flutterExternalLibrariesView', provider), vscode.commands.registerCommand('flutterExternalLibraries.refresh', () => provider.refresh()), vscode.commands.registerCommand('flutterExternalLibraries.enableSearchInDependencies', () => searchManager.enable()), vscode.commands.registerCommand('flutterExternalLibraries.disableSearchInDependencies', () => searchManager.disable()), vscode.commands.registerCommand('flutterExternalLibraries.openSearchInDependencies', () => searchManager.openSearch()), searchManager);
     const lockWatcher = vscode.workspace.createFileSystemWatcher('**/pubspec.lock');
     const packageConfigWatcher = vscode.workspace.createFileSystemWatcher('**/.dart_tool/package_config.json');
     const refreshFromWatcher = () => provider.refresh();
@@ -196,6 +197,20 @@ class ExternalLibrariesTreeProvider {
             },
         ];
     }
+    async getAllDependencyPaths() {
+        const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+        const allPaths = [];
+        for (const folder of workspaceFolders) {
+            const model = await this.getWorkspaceModel(folder);
+            for (const pkg of [...model.dartPackages, ...model.flutterPlugins]) {
+                allPaths.push(pkg.rootPath);
+            }
+            if (model.dartSdkLibPath) {
+                allPaths.push(model.dartSdkLibPath);
+            }
+        }
+        return [...new Set(allPaths)];
+    }
     async getWorkspaceModel(workspaceFolder) {
         const cacheKey = workspaceFolder.uri.fsPath;
         const cached = this.workspaceModelCache.get(cacheKey);
@@ -261,6 +276,77 @@ class ExternalLibrariesTreeProvider {
         return 'Flutter Plugins';
     }
 }
+class SearchInDependenciesManager {
+    constructor(treeProvider) {
+        this.treeProvider = treeProvider;
+        this.disposables = [];
+        this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+        this.syncState();
+        this.statusBarItem.show();
+        this.disposables.push(vscode.workspace.onDidChangeConfiguration((event) => {
+            if (event.affectsConfiguration(SearchInDependenciesManager.configKey)) {
+                this.syncState();
+            }
+        }));
+    }
+    get isEnabled() {
+        return vscode.workspace.getConfiguration().get(SearchInDependenciesManager.configKey, false);
+    }
+    enable() {
+        void vscode.workspace.getConfiguration().update(SearchInDependenciesManager.configKey, true, vscode.ConfigurationTarget.Global);
+    }
+    disable() {
+        void vscode.workspace.getConfiguration().update(SearchInDependenciesManager.configKey, false, vscode.ConfigurationTarget.Global).then(() => {
+            void vscode.commands.executeCommand('workbench.action.findInFiles', {
+                filesToInclude: '',
+                triggerSearch: false,
+                showIncludesExcludes: true,
+            });
+        });
+    }
+    async openSearch() {
+        const depPaths = await this.treeProvider.getAllDependencyPaths();
+        const workspacePaths = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+        const allPaths = [...workspacePaths, ...depPaths];
+        if (depPaths.length === 0) {
+            await vscode.commands.executeCommand('workbench.action.findInFiles');
+            void vscode.window.showInformationMessage('Nenhuma dependência Flutter encontrada. Execute flutter pub get no projeto.');
+            return;
+        }
+        await vscode.commands.executeCommand('workbench.action.findInFiles', {
+            filesToInclude: allPaths.join(','),
+            triggerSearch: false,
+            showIncludesExcludes: true,
+        });
+    }
+    syncState() {
+        const enabled = this.isEnabled;
+        void vscode.commands.executeCommand('setContext', SearchInDependenciesManager.contextKey, enabled);
+        this.updateStatusBar(enabled);
+    }
+    updateStatusBar(enabled) {
+        if (enabled) {
+            this.statusBarItem.text = '$(zoom-out) Busca: Workspace + Deps';
+            this.statusBarItem.tooltip = 'Busca inclui dependências Flutter/Dart. Clique para buscar somente no workspace.';
+            this.statusBarItem.command = 'flutterExternalLibraries.disableSearchInDependencies';
+            this.statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+        }
+        else {
+            this.statusBarItem.text = '$(zoom-in) Busca: Workspace';
+            this.statusBarItem.tooltip = 'Busca somente no workspace. Clique para incluir dependências Flutter/Dart.';
+            this.statusBarItem.command = 'flutterExternalLibraries.enableSearchInDependencies';
+            this.statusBarItem.backgroundColor = undefined;
+        }
+    }
+    dispose() {
+        this.statusBarItem.dispose();
+        for (const disposable of this.disposables) {
+            disposable.dispose();
+        }
+    }
+}
+SearchInDependenciesManager.configKey = 'flutterExternalLibraries.searchInDependencies';
+SearchInDependenciesManager.contextKey = 'flutterExternalLibraries.searchInDependenciesEnabled';
 async function loadWorkspaceModel(workspaceFolder) {
     const workspacePath = workspaceFolder.uri.fsPath;
     const lockFilePath = path.join(workspacePath, 'pubspec.lock');
