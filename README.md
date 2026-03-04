@@ -61,7 +61,7 @@ Depois, abra seu projeto Flutter e use a view **External Libraries (Flutter)** n
 
 | Comando | Descrição |
 |---|---|
-| `Flutter External Libraries: Atualizar` | Recarrega a árvore de dependências |
-| `Flutter External Libraries: Incluir Dependências na Busca` | Ativa o modo Workspace + Deps |
-| `Flutter External Libraries: Buscar Somente no Workspace` | Desativa o modo Workspace + Deps |
-| `Flutter External Libraries: Abrir Busca nas Dependências` | Abre o search com as dependências incluídas |
+| `Flutter External Libraries: Refresh` | Recarrega a árvore de dependências |
+| `Flutter External Libraries: Enable Search in Dependencies` | Ativa o modo Workspace + Deps |
+| `Flutter External Libraries: Disable Search in Dependencies` | Desativa o modo Workspace + Deps |
+| `Flutter External Libraries: Search in Dependencies` | Abre o search com as dependências incluídas |

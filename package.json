@@ -56,22 +56,22 @@
     "commands": [
       {
         "command": "flutterExternalLibraries.refresh",
-        "title": "Flutter External Libraries: Atualizar",
+        "title": "Flutter External Libraries: Refresh",
         "icon": "$(refresh)"
       },
       {
         "command": "flutterExternalLibraries.enableSearchInDependencies",
-        "title": "Flutter External Libraries: Incluir Dependências na Busca",
+        "title": "Flutter External Libraries: Enable Search in Dependencies",
         "icon": "$(zoom-in)"
       },
       {
         "command": "flutterExternalLibraries.disableSearchInDependencies",
-        "title": "Flutter External Libraries: Buscar Somente no Workspace",
+        "title": "Flutter External Libraries: Disable Search in Dependencies",
         "icon": "$(zoom-out)"
       },
       {
         "command": "flutterExternalLibraries.openSearchInDependencies",
-        "title": "Flutter External Libraries: Abrir Busca nas Dependências",
+        "title": "Flutter External Libraries: Search in Dependencies",
         "icon": "$(search)"
       }
     ],
